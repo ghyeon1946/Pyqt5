@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QWidget, QPushButton, QFileDialog, QColorDialog, QGridLayout, QGraphicsScene, QComboBox, QMessageBox, QRadioButton
 from PyQt5.QtGui import QPainter, QPen, QBrush, QPixmap, QColor, QPolygon
-from PyQt5.QtCore import QPoint, QRect
+from PyQt5.QtCore import QPoint, QRect, Qt
 from copy import deepcopy
 
 # 그림은 QLabel에 QPixmap을 넣어서 만든다.
@@ -32,16 +32,27 @@ class Canvas(QLabel):
         painter.drawRect(-100, -100, self.size[0]+100, self.size[1]+100)
         painter.end()
 
+    # def Dog(self, e):
+    #     t_pixmap = self.pixmap()
+    #     t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
+    #     Square = QPainter(self.pixmap())
+    #     Square.setPen(QPen(QColor(100, 100, 100), 10))
+    #     Square.drawRect(QRect(self.begin, e.pos()))
+    #     Square.end()
+    #     self.repaint()
+    #     self.setPixmap(t_pixmap)
+  
     def Dog(self, e):
-        t_pixmap = self.pixmap()
-        t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
-        Square = QPainter(self.pixmap())
-        Square.setPen(QPen(QColor(100, 100, 100), 10))
-        Square.drawRect(QRect(self.begin, e.pos()))
-        Square.end()
-        self.repaint()
-        self.setPixmap(t_pixmap)
-
+        if e.buttons() == Qt.LeftButton:
+            painter = QPainter(self.pixmap())
+            pen = QPen(Qt.red, 3)
+            painter.setPen(pen)
+            # painter.drawPixmap(self.rect(), imagePixmap)
+            painter.drawRect(QRect(self.begin, e.pos()))
+            painter.end()
+            self.update()
+            # self.repaint()
+    
     def Cat(self, e):
         t_pixmap = self.pixmap()
         t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
@@ -57,6 +68,7 @@ class Canvas(QLabel):
         self.update()
 
     def changeMouseMoveEvent2(self):
+        print('hi')
         self.mouseMoveEvent = self.Dog
 
     def changeMouseMoveEvent3(self):
@@ -80,8 +92,10 @@ class Canvas(QLabel):
             self.cnt = self.cnt + 1
             self.path.append(fname[0])
 
-            pixmap = QPixmap(fname[0])
+            pixmap = QPixmap.fromImage(fname[0])
             print(self.path[self.cnt])
+
+            MainWindow.setLabel(self.path, self.cnt)
 
             self.label1.setPixmap(pixmap)  # 이미지 세팅
             self.label1.resize(pixmap.width(), pixmap.height())
@@ -89,7 +103,7 @@ class Canvas(QLabel):
             # 이미지의 크기에 맞게 Resize
             self.resize(pixmap.width(), pixmap.height())
 
-            self.show()
+            # self.show()
 
     def preImage(self):
         pass
@@ -132,9 +146,8 @@ class MainWindow(QMainWindow):
         self.rbtn2.move(880, 80)
         self.rbtn2.clicked.connect(self.canvas.changeMouseMoveEvent3)
 
-        self.label1 = QLabel('사진 경로                                                  ',self)
-        self.label1.setText(self.canvas.path[self.cnt])
-        self.label1.move(150, 645)
+    def setLabel(self, path, num):
+        self.label1.setText(path[num])
 
 
 if __name__ == "__main__":
