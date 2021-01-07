@@ -36,22 +36,20 @@ class Canvas(QLabel):
             t_pixmap = self.label1.pixmap()
             t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
             Square = QPainter(self.label1.pixmap())
-            Square.setPen(QPen(QColor(255, 255, 255), 10))
+            #Square.setPen(QPen(QColor(255, 255, 255), 10))
             Square.drawRect(QRect(self.begin, e.pos()))
             Square.end()
             self.repaint()
-            self.setPixmap(t_pixmap)
     
     def Cat(self, e):
         if e.buttons() == Qt.LeftButton:
             t_pixmap = self.label1.pixmap()
             t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
             Square = QPainter(self.label1.pixmap())
-            Square.setPen(QPen(QColor(255, 255, 255), 10))
+            #Square.setPen(QPen(QColor(255, 255, 255), 10))
             Square.drawRect(QRect(self.begin, e.pos()))
             Square.end()
             self.repaint()
-            self.setPixmap(t_pixmap)
 
     def mousePressEvent(self, e):
         self.begin = e.pos()
@@ -79,9 +77,9 @@ class Canvas(QLabel):
         if self.fname:
             # QPixmap 객체
             self.fname = os.path.realpath(self.fname)
-            self.pixmap = [QPixmap(self.fname+'/'+img).scaled(850,620) for img in os.listdir(self.fname + '/')]
+            self.pixmap = [QPixmap(self.fname+'/'+img).scaled(800,620) for img in os.listdir(self.fname + '/')]
 
-            self.pixmap[0] = self.pixmap[0].scaled(850,620)
+            self.pixmap[0] = self.pixmap[0].scaled(800,620)
 
             self.label1.setPixmap(self.pixmap[0])  # 이미지 세팅
             self.label1.resize(self.pixmap[0].width(), self.pixmap[0].height())
@@ -104,26 +102,28 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.canvas = Canvas(self, (850, 620))
+        self.canvas.move(30, 30)
         self.setFixedSize(1000, 720)
         
-        self.setCentralWidget(self.canvas)
+        #self.setCentralWidget(self.canvas)
+        self.canvas.move(10, 10)
         self.init_UI()
         self.show()
 
     def init_UI(self):
         self.backbtn = QPushButton('디렉터리 선택', self)
         self.backbtn.resize(110, 50)
-        self.backbtn.move(20, 630)
+        self.backbtn.move(20, 640)
         self.backbtn.clicked.connect(self.canvas.ButtonClickedFile)
 
         self.prebtn = QPushButton('<', self)
         self.prebtn.resize(110, 50)
-        self.prebtn.move(730, 630)
+        self.prebtn.move(730, 640)
         self.prebtn.clicked.connect(self.canvas.preImage)
 
         self.nextbtn = QPushButton('>', self)
         self.nextbtn.resize(110, 50)
-        self.nextbtn.move(850, 630)
+        self.nextbtn.move(850, 640)
         self.nextbtn.clicked.connect(self.canvas.nextImage)
 
         self.rbtn1 = QRadioButton('Dog',self)
