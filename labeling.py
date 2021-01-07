@@ -1,5 +1,5 @@
 import sys, os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QWidget, QPushButton, QFileDialog, QColorDialog, QGridLayout, QGraphicsScene, QComboBox, QMessageBox, QRadioButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QWidget, QPushButton, QFileDialog, QColorDialog, QGridLayout, QGraphicsScene, QComboBox, QMessageBox, QRadioButton, QTextEdit
 from PyQt5.QtGui import QPainter, QPen, QBrush, QPixmap, QColor, QPolygon
 from PyQt5.QtCore import QPoint, QRect, Qt
 from copy import deepcopy
@@ -36,7 +36,7 @@ class Canvas(QLabel):
             t_pixmap = self.label1.pixmap()
             t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
             Square = QPainter(self.label1.pixmap())
-            #Square.setPen(QPen(QColor(255, 255, 255), 10))
+            Square.setPen(QPen(QColor(255, 255, 255), 10))
             Square.drawRect(QRect(self.begin, e.pos()))
             Square.end()
             self.repaint()
@@ -46,7 +46,7 @@ class Canvas(QLabel):
             t_pixmap = self.label1.pixmap()
             t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
             Square = QPainter(self.label1.pixmap())
-            #Square.setPen(QPen(QColor(255, 255, 255), 10))
+            Square.setPen(QPen(QColor(255, 255, 255), 10))
             Square.drawRect(QRect(self.begin, e.pos()))
             Square.end()
             self.repaint()
@@ -87,15 +87,33 @@ class Canvas(QLabel):
             self.show()
 
     def preImage(self):
-        pass
+        if self.cnt == 0:
+                QMessageBox.about(self, "MESSAGE", "입력된 사진이 존재하지 않습니다.")
+                pass
+
+        else:
+            self.cnt-=1
+            if self.cnt == -1:
+                QMessageBox.about(self, "MESSAGE", "첫번째 사진입니다.")
+                pass
+
+            self.label1.setPixmap(self.pixmap[self.cnt])
 
     def nextImage(self):
         self.cnt+=1
 
-        if self.cnt == len(self.pixmap):
-            self.cnt=0
+        if self.cnt == 1:
+                QMessageBox.about(self, "MESSAGE", "입력된 사진이 존재하지 않습니다.")
+                pass
 
-        self.label1.setPixmap(self.pixmap[self.cnt])
+        else:
+            if self.cnt == len(self.pixmap):
+                QMessageBox.about(self, "MESSAGE", "마지막 사진입니다.")
+                self.cnt=0
+
+            self.label1.setPixmap(self.pixmap[self.cnt])
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -104,9 +122,10 @@ class MainWindow(QMainWindow):
         self.canvas = Canvas(self, (850, 620))
         self.canvas.move(30, 30)
         self.setFixedSize(1000, 720)
-        
-        #self.setCentralWidget(self.canvas)
         self.canvas.move(10, 10)
+
+        self.canvas.setCursor(Qt.CrossCursor)
+
         self.init_UI()
         self.show()
 
