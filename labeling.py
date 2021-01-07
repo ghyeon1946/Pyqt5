@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QWidget, QPushButton, QFileDialog, QColorDialog, QGridLayout, QGraphicsScene, QComboBox, QMessageBox, QRadioButton
 from PyQt5.QtGui import QPainter, QPen, QBrush, QPixmap, QColor, QPolygon
 from PyQt5.QtCore import QPoint, QRect, Qt
@@ -22,7 +22,6 @@ class Canvas(QLabel):
         self.end = QPoint()
 
         self.cnt = 0
-        self.path = ['사진 경로                                                  ']
 
         self.clear_canvas()
 
@@ -31,44 +30,34 @@ class Canvas(QLabel):
         painter.setBrush(QColor(255, 255, 255))
         painter.drawRect(-100, -100, self.size[0]+100, self.size[1]+100)
         painter.end()
-
-    # def Dog(self, e):
-    #     t_pixmap = self.pixmap()
-    #     t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
-    #     Square = QPainter(self.pixmap())
-    #     Square.setPen(QPen(QColor(100, 100, 100), 10))
-    #     Square.drawRect(QRect(self.begin, e.pos()))
-    #     Square.end()
-    #     self.repaint()
-    #     self.setPixmap(t_pixmap)
   
     def Dog(self, e):
         if e.buttons() == Qt.LeftButton:
-            painter = QPainter(self.pixmap())
-            pen = QPen(Qt.red, 3)
-            painter.setPen(pen)
-            # painter.drawPixmap(self.rect(), imagePixmap)
-            painter.drawRect(QRect(self.begin, e.pos()))
-            painter.end()
-            self.update()
-            # self.repaint()
+            t_pixmap = self.label1.pixmap()
+            t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
+            Square = QPainter(self.label1.pixmap())
+            Square.setPen(QPen(QColor(255, 255, 255), 10))
+            Square.drawRect(QRect(self.begin, e.pos()))
+            Square.end()
+            self.repaint()
+            self.setPixmap(t_pixmap)
     
     def Cat(self, e):
-        t_pixmap = self.pixmap()
-        t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
-        Square = QPainter(self.pixmap())
-        Square.setPen(QPen(QColor(0, 0, 0), 10))
-        Square.drawRect(QRect(self.begin, e.pos()))
-        Square.end()
-        self.repaint()
-        self.setPixmap(t_pixmap)
+        if e.buttons() == Qt.LeftButton:
+            t_pixmap = self.label1.pixmap()
+            t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
+            Square = QPainter(self.label1.pixmap())
+            Square.setPen(QPen(QColor(255, 255, 255), 10))
+            Square.drawRect(QRect(self.begin, e.pos()))
+            Square.end()
+            self.repaint()
+            self.setPixmap(t_pixmap)
 
     def mousePressEvent(self, e):
         self.begin = e.pos()
         self.update()
 
     def changeMouseMoveEvent2(self):
-        print('hi')
         self.mouseMoveEvent = self.Dog
 
     def changeMouseMoveEvent3(self):
@@ -78,38 +67,37 @@ class Canvas(QLabel):
         pass
 
     def mouseReleaseEvent(self, e):
-        Square = QPainter(self.pixmap())
+        Square = QPainter(self.label1.pixmap())
         Square.setPen(QPen(QColor(0, 0, 0), 10))
         Square.drawRect(QRect(self.begin, e.pos()))
         Square.end()
         self.repaint()
 
     def ButtonClickedFile(self):
-        fname = QFileDialog.getOpenFileName()
+        self.fname = QFileDialog.getExistingDirectory()
 
-        if fname[0]:
+        if self.fname:
             # QPixmap 객체
-            self.cnt = self.cnt + 1
-            self.path.append(fname[0])
+            self.fname = os.path.realpath(self.fname)
+            self.pixmap = [QPixmap(self.fname+'/'+img).scaled(850,620) for img in os.listdir(self.fname + '/')]
 
-            pixmap = QPixmap.fromImage(fname[0])
-            print(self.path[self.cnt])
+            self.pixmap[0] = self.pixmap[0].scaled(850,620)
 
-            MainWindow.setLabel(self.path, self.cnt)
+            self.label1.setPixmap(self.pixmap[0])  # 이미지 세팅
+            self.label1.resize(self.pixmap[0].width(), self.pixmap[0].height())
 
-            self.label1.setPixmap(pixmap)  # 이미지 세팅
-            self.label1.resize(pixmap.width(), pixmap.height())
-
-            # 이미지의 크기에 맞게 Resize
-            self.resize(pixmap.width(), pixmap.height())
-
-            # self.show()
+            self.show()
 
     def preImage(self):
         pass
 
     def nextImage(self):
-        pass
+        self.cnt+=1
+
+        if self.cnt == len(self.pixmap):
+            self.cnt=0
+
+        self.label1.setPixmap(self.pixmap[self.cnt])
 
 class MainWindow(QMainWindow):
     def __init__(self):
