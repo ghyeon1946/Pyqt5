@@ -1,8 +1,14 @@
 import sys, os
+import glob
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QWidget, QPushButton, QFileDialog, QColorDialog, QGridLayout, QGraphicsScene, QComboBox, QMessageBox, QRadioButton, QTextEdit
 from PyQt5.QtGui import QPainter, QPen, QBrush, QPixmap, QColor, QPolygon
 from PyQt5.QtCore import QPoint, QRect, Qt
 from copy import deepcopy
+
+data = {
+    'dog': "red",
+    'cat': 'blue'
+}
 
 # 그림은 QLabel에 QPixmap을 넣어서 만든다.
 # QPixmap은 그냥 그림이라고 생각
@@ -12,124 +18,178 @@ class Canvas(QLabel):
         super().__init__(parent=parent)
 
         self.size = size
-        self.setPixmap(QPixmap(*size))
         self.setFixedSize(*size)
 
-        self.label1 = QLabel(self)
-        self.label1.move(0, 0)
 
         self.begin = QPoint()
         self.end = QPoint()
 
-        self.cnt = 0
+        self.image_list = []
+        self.boundBoxes = []
+        self.image = None
+        self.flag = False
+        self.index = 0
 
-        self.clear_canvas()
+        self.n = 'dog'
 
-    def clear_canvas(self):
-        painter = QPainter(self.pixmap())
-        painter.setBrush(QColor(255, 255, 255))
-        painter.drawRect(-100, -100, self.size[0]+100, self.size[1]+100)
-        painter.end()
-
-    def Dog(self, e):
-        if e.buttons() == Qt.LeftButton:
-            t_pixmap = self.label1.pixmap()
-            t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
-            Square = QPainter(self.label1.pixmap())
-            Square.setPen(QPen(QColor(255, 255, 255), 10))
-            Square.drawRect(QRect(self.begin, e.pos()))
-            Square.end()
-            self.repaint()
-
-    def Cat(self, e):
-        if e.buttons() == Qt.LeftButton:
-            t_pixmap = self.label1.pixmap()
-            t_pixmap = t_pixmap.copy(0, 0, t_pixmap.width(), t_pixmap.height())
-            Square = QPainter(self.label1.pixmap())
-            Square.setPen(QPen(QColor(255, 255, 255), 10))
-            Square.drawRect(QRect(self.begin, e.pos()))
-            Square.end()
-            self.repaint()
 
     def mousePressEvent(self, e):
-        self.begin = e.pos()
-        self.update()
+        if e.buttons() == Qt.LeftButton:
+            self.flag = True
+            self.begin = e.pos()
+            self.end   = e.pos()
+        elif e.buttons() == Qt.RightButton:
+            print('right')
+            self.removeBoundBox(e.pos())
 
+
+    def removeBoundBox(self, pos):
+        for boundBox in self.boundBoxes[::-1]:
+            print(boundBox)
+            x1, y1 = boundBox[0].x(), boundBox[0].y()
+            x2, y2 = boundBox[1].x(), boundBox[1].y()
+
+            if x1 <= pos.x() <= x2:
+                if y1 <= pos.y() <= y2:
+                    self.boundBoxes.remove(boundBox)
+                    self.update()
+                    break
+                    
     def changeMouseMoveEvent2(self):
-        self.mouseMoveEvent = self.Dog
+        self.n = 'dog'
 
     def changeMouseMoveEvent3(self):
-        self.mouseMoveEvent = self.Cat
+        self.n = 'cat'
 
     def mouseMoveEvent(self, e):
-        pass
+        if self.flag == True:
+            self.end = e.pos()
+            self.update()
 
     def mouseReleaseEvent(self, e):
-        Square = QPainter(self.label1.pixmap())
-        Square.setPen(QPen(QColor(0, 0, 0), 10))
-        Square.drawRect(QRect(self.begin, e.pos()))
-        self.Pos = [self.begin, e.pos()]
-        Square.end()
-        self.repaint()
+        if e.button() == Qt.LeftButton:
+            self.flag = False
+            self.boundBoxes.append((self.begin, self.end, self.n))
+            self.update()
 
     def ButtonClickedFile(self):
         self.fname = QFileDialog.getExistingDirectory()
 
         if self.fname:
             # QPixmap 객체
-            self.fname = os.path.realpath(self.fname)
-            self.pixmap = [QPixmap(self.fname + '/' + self.img).scaled(800,620) for self.img in os.listdir(self.fname + '/')]
+            self.image = None
+            self.boundBoxes = []
+            self.image_list = []
+            self.index = 0
+            self.image_list.extend(glob.glob(os.path.join(self.fname, "*.jpg")))
+            self.image_list.extend(glob.glob(os.path.join(self.fname, "*.png")))
+            # 정렬하는 거 
+            self.init_widget()
 
-            self.pixmap[0] = self.pixmap[0].scaled(800,620)
-
-            self.label1.setPixmap(self.pixmap[0])  # 이미지 세팅
-            self.label1.resize(self.pixmap[0].width(), self.pixmap[0].height())
-
-            self.show()
+    def paintEvent(self, event):
+        if self.image == None:
+            self.setPixmap(QPixmap())
+            painter = QPainter(self)
+            # painter.drawPixmap(QPoint(0, 0), pixmap, QPoint(*self.size))
+            painter.setBrush(QColor(255, 255, 255))
+            painter.drawRect(-100, -100, self.size[0]+100, self.size[1]+100)
+            painter.end()
+        else:
+            painter = QPainter(self)
+            painter.drawPixmap(0, 0, self.image)
+            for boundBox in self.boundBoxes:
+                painter.setPen(QPen(QColor(data[boundBox[2]])))
+                painter.drawRect(QRect(boundBox[0], boundBox[1]))
+            if self.flag:
+                painter.setPen(QPen(QColor(data[self.n])))
+                painter.drawRect(QRect(self.begin, self.end))
+            painter.end()
+        
+    def init_widget(self):
+        if len(self.image_list) == 0:
+            return
+        print('byebye')
+        self.image = QPixmap(self.image_list[0]).scaled(800,620)
+        self.loadFile()
+        self.update()
+        
 
     def preImage(self):
-        if self.cnt == 0:
-                QMessageBox.about(self, "MESSAGE", "입력된 사진이 존재하지 않습니다.")
-                pass
+        if 0 == self.index:
+            return
 
-        else:
-            self.cnt-=1
-            if self.cnt == -1:
-                QMessageBox.about(self, "MESSAGE", "첫번째 사진입니다.")
-                pass
-
-            self.label1.setPixmap(self.pixmap[self.cnt])
-            self.saveFile()
+        self.saveFile()
+        self.index -= 1 
+        self.image = QPixmap(self.image_list[self.index]).scaled(800,620)
+        self.boundBoxes = []
+        self.loadFile()
+        self.update()
 
     def nextImage(self):
-        self.cnt+=1
+        
+        if len(self.image_list) - 1 == self.index:
+            return
 
-        if self.cnt == 1:
-                QMessageBox.about(self, "MESSAGE", "입력된 사진이 존재하지 않습니다.")
-                pass
-
-        else:
-            if self.cnt == len(self.pixmap):
-                QMessageBox.about(self, "MESSAGE", "마지막 사진입니다.")
-                self.cnt=0
-
-            self.label1.setPixmap(self.pixmap[self.cnt])
-            self.saveFile()
+        print('next')
+        self.saveFile()
+        self.index += 1 
+        self.image = QPixmap(self.image_list[self.index]).scaled(800,620)
+        self.boundBoxes = []
+        self.loadFile()
+        self.update()
 
     def saveFile(self):
-        #self.FileSave = QFileDialog.getSaveFileName(self, "Save file", "", "Text files (*.txt)")
-        self.file = open(self.img +'.txt','w')
-        if self.Pos[0]:
-            self.file.write("("+str(self.Pos[0].x()) +","+ str(self.Pos[0].y()) + ")"  
-            + " " + "("+str(self.Pos[1].x()) +","+ str(self.Pos[1].y()) + ")")
-        self.file.close()
+        txt_filename = self.get_text_filename()
+
+        file = open(txt_filename, 'w')
+        print(self.boundBoxes)
+        for index in range(len(self.boundBoxes)):
+            # 0: 시작좌표 1: 끝좌표 2: 이름
+            x1 = self.boundBoxes[index][0].x()
+            y1 = self.boundBoxes[index][0].y()
+            x2 = self.boundBoxes[index][1].x()
+            y2 = self.boundBoxes[index][1].y()
+            name = self.boundBoxes[index][2]
+            line = '{},{},{},{},{}\n'.format(x1, y1, x2, y2, name)
+            print(line)
+            file.write(line)
+        file.close()
+
+    def loadFile(self):
+        txt_filename = self.get_text_filename()
+
+        if not os.path.isfile(txt_filename):
+            self.boundBoxes = []
+        else:
+            file = open(txt_filename, 'r')
+            for line in file.readlines():
+                x1, y1, x2, y2, name = line.split(',')
+                name = name.strip()
+                x1 = int(x1)
+                y1 = int(y1)
+                x2 = int(x2)
+                y2 = int(y2)
+                self.boundBoxes.append((QPoint(x1, y1), QPoint(x2, y2), name))
+            file.close()
+
+    def get_text_filename(self):
+        image_path   = self.image_list[self.index]
+
+        position     = image_path.rfind('.')          # 오른쪽 . 위치 찾기
+        txt_filename = image_path[:position] + '.txt' # .txt 확장자 붙이기
+
+        return txt_filename
+
+    def close(self):
+        self.saveFile()
+
 
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        print('hi')
         self.canvas = Canvas(self, (850, 620))
         self.canvas.move(30, 30)
         self.setFixedSize(1000, 720)
@@ -138,6 +198,7 @@ class MainWindow(QMainWindow):
         self.canvas.setCursor(Qt.CrossCursor)
 
         self.init_UI()
+        print('hi')
         self.show()
 
     def init_UI(self):
@@ -158,17 +219,16 @@ class MainWindow(QMainWindow):
 
         self.rbtn1 = QRadioButton('Dog',self)
         self.rbtn1.move(880, 50)
+        self.rbtn1.setChecked(True)
         self.rbtn1.clicked.connect(self.canvas.changeMouseMoveEvent2)
 
         self.rbtn2 = QRadioButton('Cat',self)
         self.rbtn2.move(880, 80)
         self.rbtn2.clicked.connect(self.canvas.changeMouseMoveEvent3)
 
-    def setLabel(self, path, num):
-        self.label1.setText(path[num])
-
 
 if __name__ == "__main__":
     app = QApplication([])
     w = MainWindow()
+    w.show()
     app.exec_()
