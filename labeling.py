@@ -30,7 +30,7 @@ class Canvas(QLabel):
         painter.setBrush(QColor(255, 255, 255))
         painter.drawRect(-100, -100, self.size[0]+100, self.size[1]+100)
         painter.end()
-  
+
     def Dog(self, e):
         if e.buttons() == Qt.LeftButton:
             t_pixmap = self.label1.pixmap()
@@ -40,7 +40,7 @@ class Canvas(QLabel):
             Square.drawRect(QRect(self.begin, e.pos()))
             Square.end()
             self.repaint()
-    
+
     def Cat(self, e):
         if e.buttons() == Qt.LeftButton:
             t_pixmap = self.label1.pixmap()
@@ -68,6 +68,7 @@ class Canvas(QLabel):
         Square = QPainter(self.label1.pixmap())
         Square.setPen(QPen(QColor(0, 0, 0), 10))
         Square.drawRect(QRect(self.begin, e.pos()))
+        self.Pos = [self.begin, e.pos()]
         Square.end()
         self.repaint()
 
@@ -77,7 +78,7 @@ class Canvas(QLabel):
         if self.fname:
             # QPixmap 객체
             self.fname = os.path.realpath(self.fname)
-            self.pixmap = [QPixmap(self.fname+'/'+img).scaled(800,620) for img in os.listdir(self.fname + '/')]
+            self.pixmap = [QPixmap(self.fname + '/' + self.img).scaled(800,620) for self.img in os.listdir(self.fname + '/')]
 
             self.pixmap[0] = self.pixmap[0].scaled(800,620)
 
@@ -98,6 +99,7 @@ class Canvas(QLabel):
                 pass
 
             self.label1.setPixmap(self.pixmap[self.cnt])
+            self.saveFile()
 
     def nextImage(self):
         self.cnt+=1
@@ -112,6 +114,15 @@ class Canvas(QLabel):
                 self.cnt=0
 
             self.label1.setPixmap(self.pixmap[self.cnt])
+            self.saveFile()
+
+    def saveFile(self):
+        #self.FileSave = QFileDialog.getSaveFileName(self, "Save file", "", "Text files (*.txt)")
+        self.file = open(self.img +'.txt','w')
+        if self.Pos[0]:
+            self.file.write("("+str(self.Pos[0].x()) +","+ str(self.Pos[0].y()) + ")"  
+            + " " + "("+str(self.Pos[1].x()) +","+ str(self.Pos[1].y()) + ")")
+        self.file.close()
 
 
 
