@@ -20,7 +20,6 @@ class Canvas(QLabel):
         self.size = size
         self.setFixedSize(*size)
 
-
         self.begin = QPoint()
         self.end = QPoint()
 
@@ -41,7 +40,6 @@ class Canvas(QLabel):
         elif e.buttons() == Qt.RightButton:
             print('right')
             self.removeBoundBox(e.pos())
-
 
     def removeBoundBox(self, pos):
         for boundBox in self.boundBoxes[::-1]:
@@ -83,7 +81,7 @@ class Canvas(QLabel):
             self.index = 0
             self.image_list.extend(glob.glob(os.path.join(self.fname, "*.jpg")))
             self.image_list.extend(glob.glob(os.path.join(self.fname, "*.png")))
-            # 정렬하는 거 
+            
             self.init_widget()
 
     def paintEvent(self, event):
@@ -97,18 +95,21 @@ class Canvas(QLabel):
         else:
             painter = QPainter(self)
             painter.drawPixmap(0, 0, self.image)
+
             for boundBox in self.boundBoxes:
                 painter.setPen(QPen(QColor(data[boundBox[2]])))
                 painter.drawRect(QRect(boundBox[0], boundBox[1]))
+
             if self.flag:
                 painter.setPen(QPen(QColor(data[self.n])))
                 painter.drawRect(QRect(self.begin, self.end))
+
             painter.end()
         
     def init_widget(self):
         if len(self.image_list) == 0:
             return
-        print('byebye')
+        
         self.image = QPixmap(self.image_list[0]).scaled(800,620)
         self.loadFile()
         self.update()
@@ -126,11 +127,9 @@ class Canvas(QLabel):
         self.update()
 
     def nextImage(self):
-        
         if len(self.image_list) - 1 == self.index:
             return
 
-        print('next')
         self.saveFile()
         self.index += 1 
         self.image = QPixmap(self.image_list[self.index]).scaled(800,620)
@@ -142,7 +141,7 @@ class Canvas(QLabel):
         txt_filename = self.get_text_filename()
 
         file = open(txt_filename, 'w')
-        print(self.boundBoxes)
+        
         for index in range(len(self.boundBoxes)):
             # 0: 시작좌표 1: 끝좌표 2: 이름
             x1 = self.boundBoxes[index][0].x()
@@ -151,7 +150,6 @@ class Canvas(QLabel):
             y2 = self.boundBoxes[index][1].y()
             name = self.boundBoxes[index][2]
             line = '{},{},{},{},{}\n'.format(x1, y1, x2, y2, name)
-            print(line)
             file.write(line)
         file.close()
 
@@ -186,7 +184,6 @@ class Canvas(QLabel):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        print('hi')
         self.canvas = Canvas(self, (850, 620))
         self.canvas.move(30, 30)
         self.setFixedSize(1000, 720)
@@ -195,7 +192,6 @@ class MainWindow(QMainWindow):
         self.canvas.setCursor(Qt.CrossCursor)
 
         self.init_UI()
-        print('hi')
         self.show()
 
     def init_UI(self):
