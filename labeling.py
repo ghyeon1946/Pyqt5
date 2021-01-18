@@ -88,7 +88,6 @@ class Canvas(QLabel):
         if self.image == None:
             self.setPixmap(QPixmap())
             painter = QPainter(self)
-            # painter.drawPixmap(QPoint(0, 0), pixmap, QPoint(*self.size))
             painter.setBrush(QColor(255, 255, 255))
             painter.drawRect(-100, -100, self.size[0]+100, self.size[1]+100)
             painter.end()
@@ -110,7 +109,7 @@ class Canvas(QLabel):
         if len(self.image_list) == 0:
             return
         
-        self.image = QPixmap(self.image_list[0]).scaled(800,620)
+        self.image = QPixmap(self.image_list[0])
         self.loadFile()
         self.update()
         
@@ -121,7 +120,7 @@ class Canvas(QLabel):
 
         self.saveFile()
         self.index -= 1 
-        self.image = QPixmap(self.image_list[self.index]).scaled(800,620)
+        self.image = QPixmap(self.image_list[self.index])
         self.boundBoxes = []
         self.loadFile()
         self.update()
@@ -132,7 +131,7 @@ class Canvas(QLabel):
 
         self.saveFile()
         self.index += 1 
-        self.image = QPixmap(self.image_list[self.index]).scaled(800,620)
+        self.image = QPixmap(self.image_list[self.index])
         self.boundBoxes = []
         self.loadFile()
         self.update()
